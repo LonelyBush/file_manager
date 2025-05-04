@@ -1,0 +1,20 @@
+{
+  "name": "file_manager",
+  "version": "1.0.0",
+  "description": "Node JS task",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LonelyBush/file_manager.git"
+  },
+  "author": "LonelyBush",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LonelyBush/file_manager/issues"
+  },
+  "homepage": "https://github.com/LonelyBush/file_manager#readme"
+}

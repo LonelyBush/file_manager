@@ -2,14 +2,20 @@
 import {createInterface} from 'readline';
 import os from 'os';
 import { handleList, moveDown, moveUp } from './navigation/navigation.mjs';
-import { handleAddDir, handleAddFile, handleReadFile } from './filesOperation/files.mjs';
+import { handleReadFile } from './filesOperation/readFile.mjs';
+import { handleAddFile } from './filesOperation/addFile.mjs';
+import { handleAddDir } from './filesOperation/addDir.mjs';
+import { handleRenameFile } from './filesOperation/renameFile.mjs';
+import { handleCopyFile } from './filesOperation/copyFiles.mjs';
+import { handleMoveFile } from './filesOperation/moveFiles.mjs';
+import { handleDeleteFile } from './filesOperation/deleteFile.mjs';
 
 export const state = {
     currentDir: os.homedir()
 }
 
 const parseUsername = () => {
-    if(process.argv[2] === undefined){
+    if(process.argv[2] === undefined || !process.argv[2].includes('username')){
         console.log('Please enter username');
         process.exit()
     }
@@ -34,7 +40,7 @@ function main(question) {
 
     rl.question(question, async (answer) => {
         const {currentDir} = state
-        const [command, arg] = answer.split(' ');
+        const [command, arg, arg2] = answer.split(' ');
 
         switch (command){
             case '.exit':
@@ -88,6 +94,74 @@ function main(question) {
                     return main(question);
                 }
                 handleAddDir(arg?? '')
+                .then((res) => {
+                    console.log(res)
+                })
+                .catch((error) => {
+                    console.error(`\n${error.message}`);
+                })
+                .finally(() => {
+                    console.log(`\nYou are currently in ${currentDir}\n`);
+                    main(question);
+                });
+                break;
+            case 'rn':
+                if (!arg || !arg2) {
+                    console.error('\nInvalid input\n');
+                    return main(question);
+                }
+                handleRenameFile(arg?? '', arg2)
+                .then((res) => {
+                    console.log(res)
+                })
+                .catch((error) => {
+                    console.error(`\n${error.message}`);
+                })
+                .finally(() => {
+                    console.log(`\nYou are currently in ${currentDir}\n`);
+                    main(question);
+                });
+                break;
+            case 'copy':
+                if (!arg || !arg2) {
+                    console.error('\nInvalid input\n');
+                    return main(question);
+                }
+                handleCopyFile(arg?? '', arg2)
+                .then((res) => {
+                    console.log(res)
+                })
+                .catch((error) => {
+                    console.error(`\n${error.message}`);
+                })
+                .finally(() => {
+                    console.log(`\nYou are currently in ${currentDir}\n`);
+                    main(question);
+                });
+                break;
+            case 'mv':
+                if (!arg || !arg2) {
+                    console.error('\nInvalid input\n');
+                    return main(question);
+                }
+                handleMoveFile(arg?? '', arg2)
+                .then((res) => {
+                    console.log(res)
+                })
+                .catch((error) => {
+                    console.error(`\n${error.message}`);
+                })
+                .finally(() => {
+                    console.log(`\nYou are currently in ${currentDir}\n`);
+                    main(question);
+                });
+                break;
+            case 'rm':
+                if (!arg) {
+                    console.error('\nFile name required\n');
+                    return main(question);
+                }
+                handleDeleteFile(arg?? '')
                 .then((res) => {
                     console.log(res)
                 })

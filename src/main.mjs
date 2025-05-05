@@ -3,7 +3,7 @@ import { access, readdir, stat, } from 'fs/promises';
 import {createInterface} from 'readline';
 import os from 'os';
 import path from 'path';
-import { createReadStream } from 'fs';
+import { createReadStream, open, writeFile } from 'fs';
 
 let currentDir = os.homedir();
 
@@ -75,17 +75,37 @@ const handleReadFile = async (sourcePath) => {
         const read = createReadStream(newPath, { encoding: 'utf-8' });
 
         read.on('data', (chunk) => {
-            process.stdout.write(chunk);
+            console.log(`\n`);
+            console.log(`\n${chunk}\n`);
         });
 
         read.on('end', () => {
-            process.stdout.write('\n');
+            console.log(`\n`);
             resolve();
         });
 
         read.on('error', (error) => {
             reject(error);
         });
+    });
+}
+
+const handleAddFile = async (sourcePath) => {
+    const newPath = path.join(currentDir, sourcePath)
+
+    return new Promise((resolve, reject) => {
+        open(newPath, 'r+', (err) => {
+            if(err){
+                return  writeFile(newPath, '', (err) => {
+                    if(err){
+                        reject(err);
+                    }
+                    return resolve(`\nFile ${sourcePath} has been created in ${currentDir}\n`)
+                })
+            }else {
+                return reject(new Error('File already exists'))
+            }
+        })
     });
 }
 
@@ -119,7 +139,24 @@ function main(question) {
                     console.error(`\n${error.message}`);
                 })
                 .finally(() => {
-                    process.stdout.write(`\nYou are currently in ${currentDir}\n`);
+                    console.log(`\nYou are currently in ${currentDir}\n`);
+                    main(question);
+                });
+                break;
+            case 'add':
+                if (!arg) {
+                    console.error('\nFile name required\n');
+                    return main(question);
+                }
+                handleAddFile(arg?? '')
+                .then((res) => {
+                    console.log(res)
+                })
+                .catch((error) => {
+                    console.error(`\n${error.message}`);
+                })
+                .finally(() => {
+                    console.log(`\nYou are currently in ${currentDir}\n`);
                     main(question);
                 });
                 break;

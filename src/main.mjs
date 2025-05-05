@@ -9,6 +9,8 @@ import { handleRenameFile } from './filesOperation/renameFile.mjs';
 import { handleCopyFile } from './filesOperation/copyFiles.mjs';
 import { handleMoveFile } from './filesOperation/moveFiles.mjs';
 import { handleDeleteFile } from './filesOperation/deleteFile.mjs';
+import { getArch, getCPUS, getEOL, getHomeDir, getUsername } from './os/os.mjs';
+import { calculateHash } from './hash/hash.mjs';
 
 export const state = {
     currentDir: os.homedir()
@@ -166,6 +168,46 @@ function main(question) {
                     console.log(res)
                 })
                 .catch((error) => {
+                    console.error(`\n${error.message}`);
+                })
+                .finally(() => {
+                    console.log(`\nYou are currently in ${currentDir}\n`);
+                    main(question);
+                });
+                break;
+
+            case 'os':
+                switch (arg){
+                    case '--EOL':
+                        getEOL();
+                        console.log(`\nYou are currently in ${currentDir}\n`);
+                        break;
+                    case '--cpus':
+                        getCPUS();
+                        console.log(`\nYou are currently in ${currentDir}\n`);
+                        break;
+                    case '--homedir':
+                        getHomeDir()
+                        console.log(`\nYou are currently in ${currentDir}\n`);
+                        break;
+                    case '--username':
+                        getUsername()
+                        console.log(`\nYou are currently in ${currentDir}\n`);
+                        break;
+                    case '--architecture':
+                        getArch();
+                        console.log(`\nYou are currently in ${currentDir}\n`);
+                        break;
+                    default:
+                    rl.write('Invalid input' + '\n')
+                }
+                break;
+            case 'hash':
+                if (!arg) {
+                    console.error('\nFile name required\n');
+                    return main(question);
+                }
+                calculateHash(arg?? '').catch((error) => {
                     console.error(`\n${error.message}`);
                 })
                 .finally(() => {

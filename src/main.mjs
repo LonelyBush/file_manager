@@ -40,7 +40,7 @@ const moveUp = () => {
 
 const moveDown = async (sourcePath) => {
     const newPath = path.join(currentDir, sourcePath)
-
+    console.log(newPath);
     try {
         await access(path.normalize(newPath));
         currentDir = path.normalize(newPath);
@@ -62,18 +62,21 @@ function main(question) {
     rl.question(question, async (answer) => {
         const [command, arg] = answer.split(' ');
 
-        if(command === ".exit") {
-            console.log(`Thank you for using File Manager, ${userName}, goodbye!`)
-            process.exit(0)
-        }
-        if (command === "up"){
-            moveUp(currentDir);
-        }
-        if(command === 'cd'){
-            await moveDown(arg);
-        }
-        if(answer === 'ls'){
-           await handleList()
+        switch (command){
+            case '.exit':
+                console.log(`Thank you for using File Manager, ${userName}, goodbye!`)
+                process.exit(0)
+            case 'up':
+                moveUp(currentDir);
+                break;
+            case 'cd':
+                await moveDown(arg?? '');
+                break;
+            case 'ls':
+                await handleList()
+                break;
+            default:
+                rl.write('Invalid input' + '\n')
         }
         main(question)
     })

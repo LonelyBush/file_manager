@@ -1,11 +1,12 @@
 
-import { access, readdir, stat, } from 'fs/promises';
 import {createInterface} from 'readline';
 import os from 'os';
-import path from 'path';
-import { createReadStream, open, writeFile } from 'fs';
+import { handleList, moveDown, moveUp } from './navigation/navigation.mjs';
+import { handleAddDir, handleAddFile, handleReadFile } from './filesOperation/files.mjs';
 
-let currentDir = os.homedir();
+export const state = {
+    currentDir: os.homedir()
+}
 
 const parseUsername = () => {
     if(process.argv[2] === undefined){
@@ -22,96 +23,17 @@ const rl = createInterface({
 })
 
 rl.write(`Welcome to the File Manager, ${userName}!` + '\n');
-process.stdout.write(`\nYou are currently in ${currentDir}\n`);
+process.stdout.write(`\nYou are currently in ${state.currentDir}\n`);
 
 rl.on('SIGINT', () => {
     console.log('\n'+`Thank you for using File Manager, ${userName}, goodbye!`)
     rl.close();
 })
 
-
-const moveUp = () => {
-    const parentDir = path.dirname(currentDir);
-    if (parentDir !== currentDir) {
-      currentDir = parentDir;
-    } else {
-      console.log('You are already in root folder');
-    }
-}
-
-const moveDown = async (sourcePath) => {
-    const newPath = path.join(currentDir, sourcePath)
-
-    try {
-        await access(path.normalize(newPath));
-        const dirent = await stat(path.normalize(newPath))
-
-        if(dirent.isDirectory()){
-            currentDir = path.normalize(newPath);
-        } else {
-            throw new Error('You`ve tried to navigate on file !')
-        }
-      } catch(err) {
-        rl.write(`\n${err}\n`);
-      }
-
-}
-
-const handleList = async () => {
-    const directory = await readdir(currentDir, {withFileTypes: true});
-    console.table(directory.map(d => ({ Name: d.name, Type: d.isDirectory() ? 'directory' : 'file' }))
-    .sort((a, b) => a.Type.localeCompare(b.Type) || a.Name.localeCompare(b.Name)));
-}
-
-const handleReadFile = async (sourcePath) => {
-    const newPath = path.join(currentDir, sourcePath)
-    try {
-        await access(newPath);
-    } catch {
-        throw new Error(`ENOENT: no such file or directory, open '${newPath}'`);
-    }
-
-    return new Promise((resolve, reject) => {
-        const read = createReadStream(newPath, { encoding: 'utf-8' });
-
-        read.on('data', (chunk) => {
-            console.log(`\n`);
-            console.log(`\n${chunk}\n`);
-        });
-
-        read.on('end', () => {
-            console.log(`\n`);
-            resolve();
-        });
-
-        read.on('error', (error) => {
-            reject(error);
-        });
-    });
-}
-
-const handleAddFile = async (sourcePath) => {
-    const newPath = path.join(currentDir, sourcePath)
-
-    return new Promise((resolve, reject) => {
-        open(newPath, 'r+', (err) => {
-            if(err){
-                return  writeFile(newPath, '', (err) => {
-                    if(err){
-                        reject(err);
-                    }
-                    return resolve(`\nFile ${sourcePath} has been created in ${currentDir}\n`)
-                })
-            }else {
-                return reject(new Error('File already exists'))
-            }
-        })
-    });
-}
-
 function main(question) {
 
     rl.question(question, async (answer) => {
+        const {currentDir} = state
         const [command, arg] = answer.split(' ');
 
         switch (command){
@@ -119,7 +41,7 @@ function main(question) {
                 console.log(`Thank you for using File Manager, ${userName}, goodbye!`)
                 process.exit(0)
             case 'up':
-                moveUp(currentDir);
+                moveUp();
                 process.stdout.write(`\nYou are currently in ${currentDir}\n`);
                 break;
             case 'cd':
@@ -149,6 +71,23 @@ function main(question) {
                     return main(question);
                 }
                 handleAddFile(arg?? '')
+                .then((res) => {
+                    console.log(res)
+                })
+                .catch((error) => {
+                    console.error(`\n${error.message}`);
+                })
+                .finally(() => {
+                    console.log(`\nYou are currently in ${currentDir}\n`);
+                    main(question);
+                });
+                break;
+            case 'mkdir':
+                if (!arg) {
+                    console.error('\nDir name is required\n');
+                    return main(question);
+                }
+                handleAddDir(arg?? '')
                 .then((res) => {
                     console.log(res)
                 })

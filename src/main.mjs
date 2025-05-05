@@ -7,6 +7,10 @@ import path from 'path';
 let currentDir = os.homedir();
 
 const parseUsername = () => {
+    if(process.argv[2] === undefined){
+        console.log('Please enter username');
+        process.exit()
+    }
     return process.argv[2].split('=').slice(1).join('');;
 }
 const userName = parseUsername();
@@ -36,6 +40,7 @@ const moveUp = () => {
 
 const moveDown = async (sourcePath) => {
     const newPath = path.join(currentDir, sourcePath)
+
     try {
         await access(path.normalize(newPath));
         currentDir = path.normalize(newPath);

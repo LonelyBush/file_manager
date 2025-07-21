@@ -2,6 +2,8 @@
 
 A powerful command-line file management tool that provides comprehensive file operations, system information, and data processing capabilities. Built with Node.js streams for efficient performance.
 
+![440828737-b8375bb1-aca8-4acc-a060-951ce4002d1a](https://github.com/user-attachments/assets/b1b11856-c54b-47ef-a1b5-696750eaf125)
+
 # Features
 ## 🗂 Navigation & Directory Operations
 - up - Move up one directory level
@@ -38,7 +40,6 @@ A powerful command-line file management tool that provides comprehensive file op
 ```
 npm install
 ```
-
 ```
-npm run start
+npm run start --username=YourUsername
 ```
